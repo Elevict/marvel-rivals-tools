@@ -12,7 +12,7 @@ from PyQt5.QtGui import QPixmap
 
 # Import pages
 from homepage import HomePage
-from team_randomizer import TeamRandomizerPage, HERO_PIXMAPS
+from team_randomizer import TeamRandomizerPage, hero_pixmaps
 from transition import SlideCurtainTransition
 from bingo import BingoPage
 from coaching_rubric import CoachingRubric
@@ -28,8 +28,8 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # Paths
-ASSET_BASE = Path(resource_path(""))
-SOUND_PATH = resource_path("sounds/slot_loop.wav")
+asset_base = Path(resource_path(""))
+sound_path = resource_path("sounds/slot_loop.wav")
 # And in SoundPlayer:
 loop_path = resource_path("sounds/slot_loop.wav")
 hover_path = resource_path("sounds/hover.wav")
@@ -37,7 +37,7 @@ click_path = resource_path("sounds/click.wav")
 
 # Load all hero images once at startup
 def load_hero_images():
-    assets_dir = ASSET_BASE / "assets"
+    assets_dir = asset_base / "assets"
     hero_names = [
         "doctorstrange", "hulk", "ironman", "spiderman", "lunasnow", "namor",
         "loki", "blackpanther", "magik", "rocket", "groot", "peniparker",
@@ -51,13 +51,13 @@ def load_hero_images():
     for name in hero_names:
         path = assets_dir / f"{name}.webp"
         if path.exists():
-            HERO_PIXMAPS[name] = QPixmap(str(path))
+            hero_pixmaps[name] = QPixmap(str(path))
 
 
 # Global sound player
 class SoundPlayer:
     def __init__(self):
-        base = ASSET_BASE / "sounds"
+        base = asset_base / "sounds"
 
         # Slot loop (for randomizer)
         self.loop = QSoundEffect()

@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QResizeEvent
 
-DEFAULT_BINGO_PHRASES = [
+# Initial phrases
+default_bingo_phrases = [
     "Pulse cannon airball", "Keyboard warrior", "Magneto performs a gravitational L", "4 DPS", "Strategist asks for a swap",
     "Triple support", "Support ultimate is canceled", "Unfunny username", "5+ minute queue time", "Voice chat yapper",
     "Lord flexing", "'gg ez'", "Mechanically ungifted", "Klyntar domination", "Certified gooner skin", "Misinformation",
@@ -18,11 +19,15 @@ DEFAULT_BINGO_PHRASES = [
     "Xbox 360 microphone"
 ]
 
+# Bingo card class
 class BingoCard(QWidget):
-    CELL_SIZE = 120
-    BORDER_WIDTH = 2
-    MARGIN = 10
 
+    # Constants
+    cell_size = 120
+    border_width = 2
+    margin = 10
+
+    # Constructor
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent_page = parent
@@ -31,10 +36,11 @@ class BingoCard(QWidget):
         self.phrases = [["" for _ in range(5)] for _ in range(5)]
         self.phrases[2][2] = "FREE"
 
-        total = 5 * self.CELL_SIZE + 2 * self.MARGIN
+        total = 5 * self.cell_size + 2 * self.margin
         self.setFixedSize(total, total)
         self.setCursor(Qt.PointingHandCursor)
 
+    # Set phrases
     def set_phrases(self, phrases_1d):
         idx = 0
         for r in range(5):
@@ -46,32 +52,34 @@ class BingoCard(QWidget):
                 idx += 1
         self.update()
 
+    # Toggles a cell on the bingo card
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            x = event.x() - self.MARGIN
-            y = event.y() - self.MARGIN
+            x = event.x() - self.margin
+            y = event.y() - self.margin
             if x >= 0 and y >= 0:
-                col = x // self.CELL_SIZE
-                row = y // self.CELL_SIZE
+                col = x // self.cell_size
+                row = y // self.cell_size
                 if 0 <= row < 5 and 0 <= col < 5 and not (row == 2 and col == 2):
                     self.parent_page.sound_player.play_click()
                     self.marked[row][col] = not self.marked[row][col]
                     self.update()
 
+    # Draws the bingo card
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing, False)
 
         for r in range(5):
             for c in range(5):
-                x = self.MARGIN + c * self.CELL_SIZE
-                y = self.MARGIN + r * self.CELL_SIZE
-                rect = (x, y, self.CELL_SIZE, self.CELL_SIZE)
+                x = self.margin + c * self.cell_size
+                y = self.margin + r * self.cell_size
+                rect = (x, y, self.cell_size, self.cell_size)
 
                 bg_color = "#e1bee7" if self.marked[r][c] else "white"
                 painter.fillRect(*rect, QColor(bg_color))
 
-                painter.setPen(QPen(QColor("#d8b4ff"), self.BORDER_WIDTH))
+                painter.setPen(QPen(QColor("#d8b4ff"), self.border_width))
                 painter.drawRect(*rect)
 
                 text = self.phrases[r][c]
@@ -85,12 +93,12 @@ class BingoCard(QWidget):
                 painter.setFont(font)
 
                 painter.drawText(
-                    x + 8, y + 8, self.CELL_SIZE - 16, self.CELL_SIZE - 16,
+                    x + 8, y + 8, self.cell_size - 16, self.cell_size - 16,
                     Qt.AlignCenter | Qt.TextWordWrap,
                     text
                 )
 
-
+# Bingo page class
 class BingoPage(QWidget):
     def __init__(self, stack, sound_player):
         super().__init__()
@@ -100,11 +108,13 @@ class BingoPage(QWidget):
         self.setAttribute(Qt.WA_OpaquePaintEvent, True)
         self.setAttribute(Qt.WA_NoSystemBackground, True)
 
+        # Background offset
         self.bg_offset = 0.0
         self.bg_timer = QTimer(self)
         self.bg_timer.timeout.connect(self.update)
         self.bg_timer.start(50)
 
+        # Main layout
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(20, 18, 20, 20)
         main_layout.setSpacing(12)
@@ -128,6 +138,7 @@ class BingoPage(QWidget):
         back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(0))
         back_btn.clicked.connect(self.sound_player.play_click)
 
+        # Back button hover events
         def back_enter(e):
             back_btn.setStyleSheet("""
                 QPushButton {
@@ -140,6 +151,7 @@ class BingoPage(QWidget):
                 }
             """)
             self.sound_player.play_hover()
+
 
         def back_leave(e):
             back_btn.setStyleSheet("""
@@ -191,6 +203,7 @@ class BingoPage(QWidget):
         self.generate_btn.clicked.connect(self.generate_card)
         self.generate_btn.clicked.connect(self.sound_player.play_click)
 
+        # Generate button hover events
         def gen_enter(e):
             self.generate_btn.setStyleSheet("""
                 QPushButton {
@@ -204,6 +217,7 @@ class BingoPage(QWidget):
             """)
             self.sound_player.play_hover()
 
+        # Generate button leave events
         def gen_leave(e):
             self.generate_btn.setStyleSheet("""
                 QPushButton {
@@ -215,21 +229,20 @@ class BingoPage(QWidget):
                     border: 4px solid #d8b4ff;
                 }
             """)
-
+        
         self.generate_btn.enterEvent = gen_enter
         self.generate_btn.leaveEvent = gen_leave
 
         gen_row.addWidget(self.generate_btn)
         main_layout.addLayout(gen_row)
 
-        # === Custom phrases box (clean "Custom Phrases" cover) ===
         main_layout.addSpacing(30)
 
         phrases_wrapper = QHBoxLayout()
         phrases_wrapper.addStretch(1)
 
         self.phrases_container = QWidget()
-        self.phrases_container.setFixedSize(600, 130)  # Adjust width here if needed
+        self.phrases_container.setFixedSize(600, 130)
         self.phrases_container.setMouseTracking(True)
 
         container_layout = QVBoxLayout(self.phrases_container)
@@ -238,7 +251,7 @@ class BingoPage(QWidget):
 
         self.phrases_edit = QTextEdit()
         self.phrases_edit.setPlaceholderText("Enter phrases separated by commas...")
-        self.phrases_edit.setPlainText(", ".join(DEFAULT_BINGO_PHRASES))
+        self.phrases_edit.setPlainText(", ".join(default_bingo_phrases))
         self.phrases_edit.setStyleSheet("""
             QTextEdit {
                 background: #f9f1ff;
@@ -290,11 +303,13 @@ class BingoPage(QWidget):
 
         self.generate_card()
 
+    # Resizes the phrases cover
     def resizeEvent(self, event: QResizeEvent):
         super().resizeEvent(event)
         if hasattr(self, 'phrases_cover'):
-            self.phrases_cover.setGeometry(0, 0, 600, 130)  # Match fixed size above
+            self.phrases_cover.setGeometry(0, 0, 600, 130)
 
+    # Paints the background
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing, True)
@@ -324,11 +339,12 @@ class BingoPage(QWidget):
 
         super().paintEvent(event)
 
+    # Generates a new bingo card
     def generate_card(self):
         text = self.phrases_edit.toPlainText().strip()
         all_phrases = [p.strip() for p in text.replace("\n", ",").split(",") if p.strip()]
 
-        source_phrases = all_phrases if len(all_phrases) >= 24 else DEFAULT_BINGO_PHRASES
+        source_phrases = all_phrases if len(all_phrases) >= 24 else default_bingo_phrases
         selected = random.sample(source_phrases, 24)
 
         self.bingo_card.set_phrases(selected)

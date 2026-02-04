@@ -8,22 +8,22 @@ from PyQt5.QtWidgets import (
 )
 
 # Ranks
-RANKS = ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Celestial", "Eternity+"]
+ranks = ["Bronze", "Silver", "Gold", "Platinum", "Diamond", "Master", "Celestial", "Eternity+"]
 
 # Score mapping
-TIER_SCORES = {
+tier_scores = {
     "Bronze": 1, "Silver": 2, "Gold": 3, "Platinum": 3,
     "Diamond": 4, "Master": 4, "Celestial": 5, "Eternity+": 5
 }
 
 # Colors
-RANK_COLORS = {
+rank_colors = {
     "Bronze": "#cd7f32", "Silver": "#c0c0c0", "Gold": "#ffd700",
     "Platinum": "#e5e4e2", "Diamond": "#b9f2ff", "Master": "#ffcc00",
     "Celestial": "#87ceeb", "Eternity+": "#9370db"
 }
 
-CATEGORIES = {
+categories = {
     "Mechanics": {"color": "#ff80ab"},
     "Role Effectiveness": {"color": "#8c9eff"},
     "Game Sense": {"color": "#b388ff"},
@@ -34,11 +34,11 @@ import os
 from pathlib import Path
 
 # Asset loading
-ASSET_BASE = Path(__file__).parent.parent / "assets"
+asset_base = Path(__file__).parent.parent / "assets"
 
 def load_rank_image(rank_name):
     """Load rank image from assets folder."""
-    # Map rank names to your actual filenames
+    # Map rank names to filenames
     filename_map = {
         "Bronze": "bronze.png",
         "Silver": "silver.png", 
@@ -51,7 +51,7 @@ def load_rank_image(rank_name):
     }
     
     filename = filename_map.get(rank_name, f"{rank_name.lower()}.png")
-    image_path = ASSET_BASE / filename
+    image_path = asset_base / filename
 
     if image_path.exists():
         return str(image_path)
@@ -62,7 +62,7 @@ class RankSelector(QWidget):
         super().__init__()
         self.rubric = rubric
         self.category = category
-        self.start_index = max(0, RANKS.index(initial_rank) - 1)
+        self.start_index = max(0, ranks.index(initial_rank) - 1)
 
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
@@ -134,23 +134,22 @@ class RankSelector(QWidget):
         self.update_display()
 
     def prev_ranks(self):
-        if self.start_index > -1:  # Allow going to -1 to show empty container before Bronze
+        if self.start_index > -1:
             self.start_index -= 1
             self.update_display()
 
     def next_ranks(self):
-        if self.start_index + 3 < len(RANKS) + 1:  # Allow going to len(RANKS)-1 to show empty container after Eternity+
+        if self.start_index + 3 < len(ranks) + 1:
             self.start_index += 1
             self.update_display()
 
     def update_display(self):
         for i in range(3):
             index = self.start_index + i
-            if 0 <= index < len(RANKS):  # Only show ranks for valid indices
-                rank = RANKS[index]
+            if 0 <= index < len(ranks):
+                rank = ranks[index]
                 image_path = load_rank_image(rank)
                 
-                # Update rank name label (handle Eternity+ specially)
                 display_name = "Eternity" if rank == "Eternity+" else rank
                 self.rank_squares[i]['label'].setText(display_name)
                 
@@ -161,10 +160,9 @@ class RankSelector(QWidget):
                         self.rank_squares[i]['image'].setPixmap(scaled_pixmap)
                         self.rank_squares[i]['image'].setStyleSheet("border: none;")
                     else:
-                        # Fallback to colored circle if image fails to load
-                        self.rank_squares[i]['image'].setText(rank[0])  # First letter as fallback
+                        self.rank_squares[i]['image'].setText(rank[0])
                         self.rank_squares[i]['image'].setStyleSheet(f"""
-                            background-color: {RANK_COLORS[rank]};
+                            background-color: {rank_colors[rank]};
                             border-radius: 25px;
                             color: white;
                             border: none;
@@ -172,10 +170,9 @@ class RankSelector(QWidget):
                             font-weight: bold;
                         """)
                 else:
-                    # Fallback to colored circle if image doesn't exist
-                    self.rank_squares[i]['image'].setText(rank[0])  # First letter as fallback
+                    self.rank_squares[i]['image'].setText(rank[0])
                     self.rank_squares[i]['image'].setStyleSheet(f"""
-                        background-color: {RANK_COLORS[rank]};
+                        background-color: {rank_colors[rank]};
                         border-radius: 25px;
                         color: white;
                         border: none;
@@ -183,17 +180,14 @@ class RankSelector(QWidget):
                         font-weight: bold;
                     """)
             else:
-                # Show empty container for invalid indices (before Bronze or after Eternity+)
                 self.rank_squares[i]['image'].clear()
                 self.rank_squares[i]['image'].setStyleSheet("background-color: transparent; border: none;")
                 self.rank_squares[i]['label'].setText("")
         self.update_score()
 
     def select_rank(self, idx):
-        # Remove highlight from previous selection (only background)
         self.rank_squares[self.selected_index]['widget'].setStyleSheet("background: transparent; border: none;")
         
-        # Add highlight to new selection (only background)
         self.selected_index = idx
         self.rank_squares[self.selected_index]['widget'].setStyleSheet(
             "background: rgba(186, 104, 200, 0.2); border: none; border-radius: 10px;"
@@ -202,19 +196,18 @@ class RankSelector(QWidget):
 
     def update_score(self):
         index = self.start_index + self.selected_index
-        if 0 <= index < len(RANKS):  # Only update score if index is valid
-            rank = RANKS[index]
-            score = TIER_SCORES[rank]
+        if 0 <= index < len(ranks):
+            rank = ranks[index]
+            score = tier_scores[rank]
             if self.category:
                 self.rubric.scores[self.category] = score
             else:
                 self.rubric.player_rank = rank
 
     def reset(self):
-        self.start_index = max(0, RANKS.index("Gold") - 1)
+        self.start_index = max(0, ranks.index("Gold") - 1)
         self.selected_index = 1
         self.update_display()
-        # Highlight the middle (Gold) rank with subtle background
         self.rank_squares[1]['widget'].setStyleSheet(
             "background: rgba(186, 104, 200, 0.2); border: none; border-radius: 10px;"
         )
@@ -231,14 +224,14 @@ class CoachingRubric(QWidget):
         self.bg_timer.timeout.connect(self.update)
         self.bg_timer.start(16)
 
-        self.scores = {cat: TIER_SCORES["Gold"] for cat in CATEGORIES}
+        self.scores = {cat: tier_scores["Gold"] for cat in categories}
         self.player_rank = "Gold"
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(25, 25, 25, 25)
-        main_layout.setSpacing(10)  # Reduced overall spacing
+        main_layout.setSpacing(10)
 
-        # Centered Back button
+        # Back button
         back_row = QHBoxLayout()
         back_row.addStretch()
         back_btn = QPushButton("Back")
@@ -297,9 +290,9 @@ class CoachingRubric(QWidget):
         title.setStyleSheet("color: #9c27b0;")
         main_layout.addWidget(title)
 
-        main_layout.addSpacing(10)  # Less space between title and Player Rank
+        main_layout.addSpacing(10)
 
-        # Small Player Rank section
+        # Player Rank section
         player_label = QLabel("Player Rank")
         player_label.setFont(QFont("Arial", 16, QFont.Bold))
         player_label.setAlignment(Qt.AlignCenter)
@@ -309,18 +302,17 @@ class CoachingRubric(QWidget):
         self.player_selector = RankSelector(self, None)
         main_layout.addWidget(self.player_selector, alignment=Qt.AlignCenter)
 
-        main_layout.addSpacing(25)  # Moderate space before cards
+        main_layout.addSpacing(25)
 
-        # 2x2 grid with 4 separate large cards
+        # 2x2 grid
         grid = QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
         grid.setHorizontalSpacing(20)
         grid.setVerticalSpacing(20)
         self.selectors = {}
-        for i, category in enumerate(CATEGORIES):
-            # Large individual card
+        for i, category in enumerate(categories):
             card = QFrame()
-            card.setFixedSize(300, 170) # Card size
+            card.setFixedSize(300, 170)
             card.setStyleSheet("""
                 QFrame {
                     background: rgba(255, 255, 255, 0.95);
@@ -335,7 +327,7 @@ class CoachingRubric(QWidget):
             cat_label = QLabel(category)
             cat_label.setFont(QFont("Arial", 16, QFont.Bold))
             cat_label.setAlignment(Qt.AlignCenter)
-            cat_label.setStyleSheet(f"color: {CATEGORIES[category]['color']}; border: transparent")
+            cat_label.setStyleSheet(f"color: {categories[category]['color']}; border: transparent")
             card_layout.addWidget(cat_label)
 
             selector = RankSelector(self, category)

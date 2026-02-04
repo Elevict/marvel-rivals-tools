@@ -9,10 +9,10 @@ from PyQt5.QtWidgets import (
 )
 
 # Global assets (loaded in main.py)
-HERO_PIXMAPS = {}
+hero_pixmaps = {}
 
 # Hero list & roles
-HEROES = [
+heroes = [
     "Doctor Strange", "Hulk", "Iron Man", "Spiderman", "Luna Snow", "Namor",
     "Loki", "Black Panther", "Magik", "Rocket", "Groot", "Peni Parker",
     "Storm", "Magneto", "Star Lord", "Mantis", "Punisher", "Scarlet Witch",
@@ -23,7 +23,7 @@ HEROES = [
     "Phoenix", "Blade", "Angela", "Daredevil", "Gambit", "Rogue"
 ]
 
-ROLE_MAP = {
+role_map = {
     "Duelist": [
         "Iron Man", "Spiderman", "Black Panther", "Storm", "Namor", "Magik",
         "Star Lord", "Punisher", "Scarlet Witch", "Hela", "Winter Soldier",
@@ -41,7 +41,7 @@ ROLE_MAP = {
     ]
 }
 
-ROLE_COLORS = {"Strategist": "#b388ff", "Duelist": "#ff80ab", "Vanguard": "#8c9eff"}
+role_colors = {"Strategist": "#b388ff", "Duelist": "#ff80ab", "Vanguard": "#8c9eff"}
 
 
 class HeroSlot(QFrame):
@@ -120,7 +120,7 @@ class HeroSlot(QFrame):
 
     def set_hero(self, hero):
         key = hero.lower().replace(" ", "")
-        pix = HERO_PIXMAPS.get(key)
+        pix = hero_pixmaps.get(key)
         if pix:
             self.image.setPixmap(pix.scaled(112, 112, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             self.image.setText("")
@@ -128,10 +128,10 @@ class HeroSlot(QFrame):
             self.image.setText(hero[:9])
 
         self.name.setText(hero)
-        for role, heroes in ROLE_MAP.items():
+        for role, heroes in role_map.items():
             if hero in heroes:
                 self.role.setText(role)
-                self.role.setStyleSheet(f"color: {ROLE_COLORS[role]}; font-weight: bold;")
+                self.role.setStyleSheet(f"color: {role_colors[role]}; font-weight: bold;")
                 break
 
     def pulse(self):
@@ -415,7 +415,7 @@ class TeamRandomizerPage(QWidget):
 
     # === All your existing methods below (unchanged) ===
     def get_role(self, hero):
-        for role, heroes in ROLE_MAP.items():
+        for role, heroes in role_map.items():
             if hero in heroes:
                 return role
         return None
@@ -424,8 +424,8 @@ class TeamRandomizerPage(QWidget):
         if self.cb_222.isChecked():
             team_a = []
             team_b = []
-            for role in ROLE_MAP:
-                pool = ROLE_MAP[role][:]
+            for role in role_map:
+                pool = role_map[role][:]
                 if self.rb_unique.isChecked():
                     random.shuffle(pool)
                     team_a.extend(pool[:2])
@@ -437,13 +437,13 @@ class TeamRandomizerPage(QWidget):
             random.shuffle(team_b)
             return team_a + team_b
         else:
+            available_heroes = heroes[:]
             if self.rb_unique.isChecked():
-                heroes = HEROES[:]
-                random.shuffle(heroes)
-                return heroes
+                random.shuffle(available_heroes)
+                return available_heroes
             else:
-                team_a = random.sample(HEROES, 6)
-                team_b = random.sample(HEROES, 6)
+                team_a = random.sample(available_heroes, 6)
+                team_b = random.sample(available_heroes, 6)
                 return team_a + team_b
 
     def get_available_heroes(self, used_heroes, clicked_slot):
@@ -462,7 +462,7 @@ class TeamRandomizerPage(QWidget):
                 if role:
                     counts[role] += 1
             avail = []
-            for role, pool in ROLE_MAP.items():
+            for role, pool in role_map.items():
                 if counts[role] < 2:
                     for h in pool:
                         if self.rb_unique.isChecked():
@@ -473,10 +473,11 @@ class TeamRandomizerPage(QWidget):
                                 avail.append(h)
             return avail if avail else []
         else:
+            available_heroes = heroes[:]
             if self.rb_unique.isChecked():
-                return [h for h in HEROES if h not in global_used]
+                return [h for h in available_heroes if h not in global_used]
             else:
-                return [h for h in HEROES if h not in team_used]
+                return [h for h in available_heroes if h not in team_used]
 
     def reroll_single(self, slot):
         used_heroes = {s.name.text() for s in self.all_slots if s.name.text() != "Hero"}
@@ -504,7 +505,7 @@ class TeamRandomizerPage(QWidget):
         timer.step = 0
         def spin():
             timer.step += 1
-            h = random.choice(HEROES)
+            h = random.choice(heroes)
             slot.set_hero(h)
             if timer.step > 18:
                 timer.setInterval(timer.interval() + 14)

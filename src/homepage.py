@@ -7,12 +7,12 @@ from PyQt5.QtMultimedia import QSoundEffect
 from PyQt5.QtCore import QUrl
 
 # Paths
-ASSET_BASE = Path(__file__).parent.parent
-ASSETS_DIR = ASSET_BASE / "assets"
-SOUNDS_DIR = ASSET_BASE / "sounds"
-BG_IMAGE = ASSETS_DIR / "homepage.png"
-TITLE_IMAGE = ASSETS_DIR / "Title.png"
-CHIBI_IMAGE = ASSETS_DIR / "catgirl_chibi.png"
+asset_base = Path(__file__).parent.parent
+assets_dir = asset_base / "assets"
+sounds_dir = asset_base / "sounds"
+bg_image = assets_dir / "homepage.png"
+title_image = assets_dir / "Title.png"
+chibi_image = assets_dir / "catgirl_chibi.png"
 
 
 class ParallaxBackground(QWidget):
@@ -21,8 +21,8 @@ class ParallaxBackground(QWidget):
         self.offset = 0
         self.direction = 1
 
-        if BG_IMAGE.exists():
-            self.original_pixmap = QPixmap(str(BG_IMAGE))
+        if bg_image.exists():
+            self.original_pixmap = QPixmap(str(bg_image))
         else:
             self.original_pixmap = QPixmap(1920, 1080)
 
@@ -75,8 +75,8 @@ class HomePage(QWidget):
 
         # === FLOATING TITLE IMAGE ===
         self.title_label = QLabel()
-        if TITLE_IMAGE.exists():
-            pix = QPixmap(str(TITLE_IMAGE)).scaled(
+        if title_image.exists():
+            pix = QPixmap(str(title_image)).scaled(
                 700, 350, Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
             self.title_label.setPixmap(pix)
@@ -145,8 +145,8 @@ class HomePage(QWidget):
 
         # Chibi
         self.chibi = QLabel(self)
-        if CHIBI_IMAGE.exists():
-            chibi_pix = QPixmap(str(CHIBI_IMAGE)).scaled(180, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        if chibi_image.exists():
+            chibi_pix = QPixmap(str(chibi_image)).scaled(180, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.chibi.setPixmap(chibi_pix)
         self.chibi.setAlignment(Qt.AlignBottom | Qt.AlignRight)
         self.chibi.raise_()

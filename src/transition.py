@@ -1,4 +1,4 @@
-# transition.py — Fade-to-Black with Bottom-Left Image + Animated "Loading ♡..." in Center
+# transition.py
 from PyQt5.QtWidgets import QWidget, QLabel, QGraphicsOpacityEffect
 from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve
 from PyQt5.QtGui import QPixmap, QFont
@@ -6,8 +6,8 @@ from PyQt5.QtGui import QPixmap, QFont
 from pathlib import Path
 
 # Paths
-ASSET_BASE = Path(__file__).parent.parent
-TRANSITION_IMAGE_PATH = ASSET_BASE / "assets" / "transitionimage.jpg"
+asset_base = Path(__file__).parent.parent
+transition_image_path = asset_base / "assets" / "transitionimage.jpg"
 
 
 class SlideCurtainTransition:
@@ -22,7 +22,7 @@ class SlideCurtainTransition:
     def __init__(self, main_app_window):
         self.main_app = main_app_window
 
-        # Full-screen black overlay — blocks all mouse events
+        # Full-screen black overlay
         self.overlay = QWidget(main_app_window)
         self.overlay.setStyleSheet("background: black;")
 
@@ -35,25 +35,22 @@ class SlideCurtainTransition:
         self.transition_image = QLabel(self.overlay)
         self.transition_image.setAttribute(Qt.WA_TransparentForMouseEvents, True)
 
-        if TRANSITION_IMAGE_PATH.exists():
-            pix = QPixmap(str(TRANSITION_IMAGE_PATH)).scaled(
+        if transition_image_path.exists():
+            pix = QPixmap(str(transition_image_path)).scaled(
                 300, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
             self.transition_image.setPixmap(pix)
 
-        # Large centered "Loading ♡..." text with animated dots
         self.loading_text = QLabel("Loading ♡", self.overlay)
         self.loading_text.setAlignment(Qt.AlignCenter)
         self.loading_text.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         self.loading_text.setStyleSheet("color: white; background: transparent;")
         self.loading_text.setFont(QFont("Segoe UI", 60, QFont.Bold))  # Clean, crisp font
 
-        # Timer for dots animation
         self.dots_timer = QTimer(self.overlay)
         self.dots_timer.timeout.connect(self.update_dots)
         self.dot_count = 0
 
-        # Main fade animations
         self.fade_in = QPropertyAnimation(self.opacity_effect, b"opacity")
         self.fade_out = QPropertyAnimation(self.opacity_effect, b"opacity")
 
@@ -89,7 +86,6 @@ class SlideCurtainTransition:
         # Center loading text
         self.loading_text.setGeometry(0, 0, win_w, win_h)
 
-        # Show everything
         self.overlay.show()
         self.overlay.raise_()
         self.transition_image.show()
@@ -106,7 +102,7 @@ class SlideCurtainTransition:
 
     def start_fade_out(self):
         self.dots_timer.stop()
-        self.loading_text.setText("Loading ♡")  # Clean finish
+        self.loading_text.setText("Loading ♡")
 
         self.main_app.stack.setCurrentIndex(self.target_index)
         self.fade_out.finished.connect(self.cleanup)
